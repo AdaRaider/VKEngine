@@ -63,7 +63,6 @@ void CreateVulkanInstance()
    {
       //Handle error.
    }
-   
 
    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
    createInfo.pApplicationInfo = &applicationInfo;
