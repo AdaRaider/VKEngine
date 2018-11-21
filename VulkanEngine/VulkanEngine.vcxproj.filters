@@ -7,11 +7,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\pch.cpp" />
     <ClCompile Include="Source\VulkanEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\pch.h" />
     <ClInclude Include="Source\VulkanInstance.h" />
   </ItemGroup>
 </Project>
