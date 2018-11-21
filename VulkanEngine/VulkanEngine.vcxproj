@@ -112,7 +112,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/SDL2/lib/$(Platform)/$(Configuration)/;$(SolutionDir)3rdParty/Vulkan/lib/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,7 +131,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/SDL2/lib/$(Platform)/$(Configuration)/;$(SolutionDir)3rdParty/Vulkan/lib/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -154,7 +154,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/SDL2/lib/$(Platform)/$(Configuration)/;$(SolutionDir)3rdParty/Vulkan/lib/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -177,7 +177,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/SDL2/lib/$(Platform)/$(Configuration)/;$(SolutionDir)3rdParty/Vulkan/lib/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shaderc_combined.lib;VkLayer_api_dump.lib;VkLayer_core_validation.lib;VkLayer_device_simulation.lib;VkLayer_monitor.lib;VkLayer_object_tracker.lib;VkLayer_parameter_validation.lib;VkLayer_screenshot.lib;VkLayer_threading.lib;VkLayer_unique_objects.lib;VkLayer_utils.lib;vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
