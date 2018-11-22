@@ -18,6 +18,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 VkInstance instance;
+VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 VkDebugUtilsMessengerEXT callback;
 VkApplicationInfo applicationInfo;
 VkInstanceCreateInfo createInfo;
@@ -205,6 +206,47 @@ void InitVulkan()
 {
    CreateVulkanInstance();
    SetupDebugCallback();
+   PickPhysicalDevice();
+}
+
+bool IsDeviceSuitable(VkPhysicalDevice device) 
+{
+   VkPhysicalDeviceProperties deviceProperties;
+   vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+   VkPhysicalDeviceFeatures deviceFeatures;
+   vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+   //Get features and properties and prioritize devices
+   //Can be extended later
+   //for now we just need Vulkan support so any device will do.
+   return true;
+}
+
+void PickPhysicalDevice()
+{
+   uint32_t deviceCount = 0;
+   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+   if (deviceCount == 0) 
+   {
+      throw std::runtime_error("Failed to find GPUs with Vulkan support!");
+   }
+   std::vector<VkPhysicalDevice> devices(deviceCount);
+
+   vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+   for (const auto& device : devices) 
+   {
+      if (IsDeviceSuitable(device)) 
+      {
+         physicalDevice = device;
+         break;
+      }
+   }
+
+   if (physicalDevice == VK_NULL_HANDLE) 
+   {
+      throw std::runtime_error("Failed to find a suitable GPU!");
+   }
 }
 
 int main()
