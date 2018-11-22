@@ -7,19 +7,32 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <vector>
+#include <GLFW/glfw3.h>
+#include <iostream>
+
 #undef main
+
+GLFWwindow* window = nullptr;
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-//The window we'll be rendering to
-SDL_Window* window = NULL;
-//The surface contained by the window
-SDL_Surface* screenSurface = NULL;
 
 VkInstance instance;
+VkDebugUtilsMessengerEXT callback;
 VkApplicationInfo applicationInfo;
 VkInstanceCreateInfo createInfo;
+
+const std::vector<const char*> validationLayers = 
+{
+    "VK_LAYER_LUNARG_api_dump"
+};
+
+#ifdef NDEBUG
+const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = true;
+#endif
 
 void Update()
 {
@@ -31,25 +44,84 @@ void Render()
 
 }
 
-bool InitSDL()
+bool InitWindow()
 {
-   //Initialize SDL
-   if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-   {
-      printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-      return false;
-   }
-   //Create window
-   window = SDL_CreateWindow("VKEngine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-   if (window == NULL)
-   {
-      printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-   }
+   glfwInit();
+   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+   window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Vulkan Engine", nullptr, nullptr);
    return true;
 }
 
+bool CheckValidationLayerSupport()
+{
+   uint32_t layerCount;
+   vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+   std::vector<VkLayerProperties> availableLayers(layerCount);
+   vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+   for (const char* layerName : validationLayers) 
+   {
+      bool layerFound = false;
+
+      for (const auto& layerProperties : availableLayers) 
+      {
+         if (strcmp(layerName, layerProperties.layerName) == 0) 
+         {
+            layerFound = true;
+            break;
+         }
+      }
+
+      if (!layerFound) 
+      {
+         return false;
+      }
+   }
+
+   return true;
+}
+
+std::vector<const char*> GetRequiredExtensions()
+{
+   uint32_t glfwRequiredExtCount = 0;
+   const char** glfwExtensions;
+   glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwRequiredExtCount);
+   std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwRequiredExtCount);
+   if (enableValidationLayers)
+   {
+      extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+   }
+   return extensions;
+}
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+   VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+   VkDebugUtilsMessageTypeFlagsEXT messageType,
+   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+   void* pUserData) 
+{
+
+   std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+   return VK_FALSE;
+}
+
+void SetupDebugCallback()
+{
+
+}
+
+
 void CreateVulkanInstance()
 {
+
+   if (enableValidationLayers && !CheckValidationLayerSupport())
+   {
+      throw std::runtime_error("validation layers requested, but not available!");
+   }
+
    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
    applicationInfo.pApplicationName = "Vulkan Engine";
    applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -57,23 +129,31 @@ void CreateVulkanInstance()
    applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
    applicationInfo.apiVersion = VK_API_VERSION_1_0;
 
-   unsigned int count = 0;
-   std::vector<const char*> extensions;
-   if (!SDL_Vulkan_GetInstanceExtensions(window, &count, extensions.data()))
-   {
-      //Handle error.
-   }
-
-   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-   createInfo.pApplicationInfo = &applicationInfo;
-   createInfo.enabledExtensionCount = count;
+   auto extensions = GetRequiredExtensions();
+   createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
    createInfo.ppEnabledExtensionNames = extensions.data();
-   createInfo.enabledLayerCount = 0;
+
+   if (enableValidationLayers)
+   {
+      createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+      createInfo.ppEnabledLayerNames = validationLayers.data();
+   }
+   else
+   {
+      createInfo.enabledLayerCount = 0;
+   }
 
    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) 
    {
       throw std::runtime_error("Failed to create instance!");
    }
+}
+
+void Cleanup() 
+{
+   vkDestroyInstance(instance, nullptr);
+   glfwDestroyWindow(window);
+   glfwTerminate();
 }
 
 void InitVulkan()
@@ -83,14 +163,17 @@ void InitVulkan()
 
 int main()
 {
-   if(InitSDL())
+   if(InitWindow())
    {      
       InitVulkan();
-      while (true)
+      while (!glfwWindowShouldClose(window)) 
       {
          Update();
          Render();
-      }         
+
+         glfwPollEvents();
+      }   
+      Cleanup();
    }
    return 0;
 }
