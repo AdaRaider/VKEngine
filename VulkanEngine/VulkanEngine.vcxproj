@@ -107,6 +107,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/;$(SolutionDIr)3rdParty/glm/include;$(SolutionDIr)3rdParty/SDL2/include;$(SolutionDIr)3rdParty/Vulkan/include;$(SolutionDIr)3rdParty/glfw-3.2.1/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +127,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/;$(SolutionDIr)3rdParty/glm/include;$(SolutionDIr)3rdParty/SDL2/include;$(SolutionDIr)3rdParty/Vulkan/include;$(SolutionDIr)3rdParty/glfw-3.2.1/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +149,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/;$(SolutionDIr)3rdParty/glm/include;$(SolutionDIr)3rdParty/SDL2/include;$(SolutionDIr)3rdParty/Vulkan/include;$(SolutionDIr)3rdParty/glfw-3.2.1/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -170,6 +173,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/;$(SolutionDIr)3rdParty/glm/include;$(SolutionDIr)3rdParty/SDL2/include;$(SolutionDIr)3rdParty/Vulkan/include;$(SolutionDIr)3rdParty/glfw-3.2.1/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -1,5 +1,3 @@
-// VulkanEngine.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 
 #include <vulkan/vulkan.h>
 #include "SDL_vulkan.h"
@@ -9,6 +7,7 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <optional>
 
 #undef main
 
@@ -155,7 +154,6 @@ void SetupDebugCallback()
    }
 }
 
-
 void CreateVulkanInstance()
 {
    if (enableValidationLayers && !CheckValidationLayerSupport())
@@ -202,11 +200,36 @@ void Cleanup()
    glfwTerminate();
 }
 
-void InitVulkan()
+struct QueueFamilyIndices
 {
-   CreateVulkanInstance();
-   SetupDebugCallback();
-   PickPhysicalDevice();
+   std::optional<uint32_t> graphicsFamily;
+
+   bool IsComplete()
+   {
+      return graphicsFamily.has_value();
+   }
+};
+
+QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
+{
+   QueueFamilyIndices indices;
+
+   uint32_t queueFamilyCount = 0;
+   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+   std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+   int i = 0;
+   for (const auto& queueFamily : queueFamilies)
+   {
+      if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+         indices.graphicsFamily = i;
+      if (indices.IsComplete())
+         break;
+      i++;
+   }
+
+   return indices;
 }
 
 bool IsDeviceSuitable(VkPhysicalDevice device) 
@@ -220,7 +243,10 @@ bool IsDeviceSuitable(VkPhysicalDevice device)
    //Get features and properties and prioritize devices
    //Can be extended later
    //for now we just need Vulkan support so any device will do.
-   return true;
+
+   QueueFamilyIndices indices = findQueueFamilies(device);
+
+   return indices.IsComplete();
 }
 
 void PickPhysicalDevice()
@@ -247,6 +273,13 @@ void PickPhysicalDevice()
    {
       throw std::runtime_error("Failed to find a suitable GPU!");
    }
+}
+
+void InitVulkan()
+{
+   CreateVulkanInstance();
+   SetupDebugCallback();
+   PickPhysicalDevice();
 }
 
 int main()
