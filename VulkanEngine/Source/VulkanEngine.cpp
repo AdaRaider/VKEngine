@@ -17,7 +17,6 @@ GLFWwindow* window = nullptr;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-
 VkInstance instance;
 VkDebugUtilsMessengerEXT callback;
 VkApplicationInfo applicationInfo;
@@ -25,7 +24,8 @@ VkInstanceCreateInfo createInfo;
 
 const std::vector<const char*> validationLayers = 
 {
-    "VK_LAYER_LUNARG_api_dump"
+    "VK_LAYER_LUNARG_api_dump",
+    "VK_LAYER_LUNARG_standard_validation"
 };
 
 #ifdef NDEBUG
@@ -102,21 +102,61 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
    void* pUserData) 
 {
-
-   std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-
+   std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
    return VK_FALSE;
+}
+
+//Get the vkCreateDebugUtilsMessengerEXT func and return the result of calling the function
+VkResult CreateDebugUtilsMessengerEXT(
+   VkInstance instance, 
+   const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
+   const VkAllocationCallbacks* pAllocator, 
+   VkDebugUtilsMessengerEXT* pCallback) 
+{
+   auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+   if (func != nullptr) 
+   {
+      return func(instance, pCreateInfo, pAllocator, pCallback);
+   }
+   else 
+   {
+      return VK_ERROR_EXTENSION_NOT_PRESENT;
+   }
+}
+
+//Get the vkDestroyDebugUtilsMessengerEXT func and return the result of calling the function
+void DestroyDebugUtilsMessengerEXT(
+   VkInstance instance, 
+   VkDebugUtilsMessengerEXT callback, 
+   const VkAllocationCallbacks* pAllocator) 
+{
+   auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+   if (func != nullptr) 
+   {
+      func(instance, callback, pAllocator);
+   }
 }
 
 void SetupDebugCallback()
 {
+   if(!enableValidationLayers) return;
 
+   VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+   createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+   createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+   createInfo.pfnUserCallback = debugCallback;
+   createInfo.pUserData = nullptr; 
+
+   if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &callback) != VK_SUCCESS) 
+   {
+      throw std::runtime_error("Failed to set up debug callback!");
+   }
 }
 
 
 void CreateVulkanInstance()
 {
-
    if (enableValidationLayers && !CheckValidationLayerSupport())
    {
       throw std::runtime_error("validation layers requested, but not available!");
@@ -151,6 +191,11 @@ void CreateVulkanInstance()
 
 void Cleanup() 
 {
+   if (enableValidationLayers) 
+   {
+      DestroyDebugUtilsMessengerEXT(instance, callback, nullptr);
+   }
+
    vkDestroyInstance(instance, nullptr);
    glfwDestroyWindow(window);
    glfwTerminate();
@@ -159,6 +204,7 @@ void Cleanup()
 void InitVulkan()
 {
    CreateVulkanInstance();
+   SetupDebugCallback();
 }
 
 int main()
