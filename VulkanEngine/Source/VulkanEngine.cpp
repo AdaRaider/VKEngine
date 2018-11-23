@@ -9,6 +9,8 @@
 #include <iostream>
 #include <optional>
 #include <set>
+#include <algorithm>
+#include <cstdlib>
 
 #undef main
 
@@ -19,6 +21,7 @@ const int SCREEN_HEIGHT = 600;
 
 VkInstance instance;
 VkDevice device;
+VkSwapchainKHR swapChain;
 VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 VkPhysicalDeviceFeatures deviceFeatures = {};
 VkDebugUtilsMessengerEXT callback;
@@ -30,7 +33,7 @@ VkQueue graphicsQueue;
 
 const std::vector<const char*> validationLayers = 
 {
-    "VK_LAYER_LUNARG_api_dump",
+    //"VK_LAYER_LUNARG_api_dump",
     "VK_LAYER_LUNARG_standard_validation"
 };
 
@@ -225,11 +228,12 @@ void Cleanup()
 {
    if (enableValidationLayers) 
    {
-      //DestroyDebugUtilsMessengerEXT(instance, callback, nullptr);
+      DestroyDebugUtilsMessengerEXT(instance, callback, nullptr);
    }
 
    vkDestroySurfaceKHR(instance, surface, nullptr);
    vkDestroyDevice(device, nullptr);
+   vkDestroySwapchainKHR(device, swapChain, nullptr);
    vkDestroyInstance(instance, nullptr);
    glfwDestroyWindow(window);
    glfwTerminate();
@@ -266,6 +270,8 @@ SwapChainSuppportDetails querySwapChainSupport(VkPhysicalDevice device)
 {
    SwapChainSuppportDetails details;
 
+   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+
    uint32_t formatCount;
    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
@@ -291,8 +297,59 @@ SwapChainSuppportDetails querySwapChainSupport(VkPhysicalDevice device)
          &presentModeCount, 
          details.presentModes.data());
    }
-
+   
    return details;
+}
+
+VkSurfaceFormatKHR ChooseSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> const& availableFormats) 
+{
+   if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED) 
+   {
+      return { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
+   }
+
+   for (const auto& availableFormat : availableFormats) 
+   {
+      if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) 
+         return availableFormat;
+   }
+
+   return availableFormats[0];
+}
+
+VkPresentModeKHR ChooseSwapPresentMode(std::vector<VkPresentModeKHR> const& availablePresentModes)
+{
+   VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
+
+   for (auto const& availablePresentMode : availablePresentModes) 
+   {
+      if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) 
+      {
+         return availablePresentMode;
+      }
+      else if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) 
+      {
+         bestMode = availablePresentMode;
+      }
+   }
+   return bestMode;
+}
+
+VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) 
+{
+   if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) 
+   {
+      return capabilities.currentExtent;
+   }
+   else
+   {
+      VkExtent2D actualExtent = { SCREEN_WIDTH, SCREEN_HEIGHT };
+
+      actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+      actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+
+      return actualExtent;
+   }
 }
 
 bool CheckDeviceExtensionSupport(VkPhysicalDevice device) 
@@ -412,6 +469,81 @@ void CreateSurface()
    }
 }
 
+void CreateSwapChain()
+{
+   SwapChainSuppportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
+   VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+   VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+   VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
+
+   uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+   bool hasSwapChainCapablities = swapChainSupport.capabilities.maxImageCount > 0;
+   bool imageCountExceedsMax = imageCount > swapChainSupport.capabilities.maxImageCount;
+   
+   if (hasSwapChainCapablities && imageCountExceedsMax) 
+   {
+      imageCount = swapChainSupport.capabilities.maxImageCount;
+   }
+
+   VkSwapchainCreateInfoKHR createInfo = {};
+   createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+   createInfo.surface = surface;
+   createInfo.minImageCount = imageCount;
+   createInfo.imageFormat = surfaceFormat.format;
+   createInfo.imageColorSpace = surfaceFormat.colorSpace;
+   //createInfo.imageExtent = extent;
+   createInfo.imageArrayLayers = 1;
+   /* The imageUsage bit field specifies what kind of operations we'll use the images 
+   in the swap chain for. We're going to render directly to them, 
+   which means that they're used as color attachment. 
+   It is also possible that you'll render images to a separate image first 
+   to perform operations like post-processing. In that case you may use a value 
+   like VK_IMAGE_USAGE_TRANSFER_DST_BIT instead and use a memory operation to transfer 
+   the rendered image to a swap chain image.*/
+   createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+
+   QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+   uint32_t queueFamilyIndices[] = 
+   {  indices.graphicsFamily.value(), 
+      indices.presentFamily.value() 
+   };
+
+   if (indices.graphicsFamily != indices.presentFamily) 
+   {
+      createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+      createInfo.queueFamilyIndexCount = 2;
+      createInfo.pQueueFamilyIndices = queueFamilyIndices;
+   }
+   else 
+   {
+      createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      createInfo.queueFamilyIndexCount = 0; // Optional
+      createInfo.pQueueFamilyIndices = nullptr; // Optional
+   }
+
+   /*We can specify that a certain transform should be applied to images 
+   in the swap chain if it is supported, 
+   like a 90 degree clockwise rotation or horizontal flip. 
+   To specify that you do not want any transformation, 
+   simply specify the current transformation.*/
+   createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+   createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+   createInfo.presentMode = presentMode;
+   createInfo.clipped = VK_TRUE;
+   /*With Vulkan it's possible that your swap chain becomes invalid or unoptimized 
+   while your application is running, for example because the window was resized. 
+   In that case the swap chain actually needs to be recreated from scratch and a 
+   reference to the old one must be specified in this field. */
+   createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+   _putenv("DISABLE_VK_LAYER_VALVE_steam_overlay_1=1");
+   if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) 
+   {
+      throw std::runtime_error("Failed to create swap chain!");
+   }
+}
+
 void InitVulkan()
 {
    CreateVulkanInstance();
@@ -419,6 +551,7 @@ void InitVulkan()
    CreateSurface();
    PickPhysicalDevice();
    CreateLogicalDevice();
+   CreateSwapChain();
 }
 
 int main()
